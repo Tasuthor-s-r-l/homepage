@@ -5,12 +5,19 @@ on:
     branches:
       - main
 
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -23,6 +30,13 @@ jobs:
       - name: Build
         run: npm run build
 
+      - name: Verify build output
+        run: |
+          echo "Listing project root"
+          ls -la
+          echo "Listing dist (if present)"
+          ls -la dist || true
+
       - name: Create 404 for SPA routing
         run: cp dist/index.html dist/404.html || true
 
@@ -32,3 +46,4 @@ jobs:
           publish_dir: ./dist
           publish_branch: gh-pages
           github_token: ${{ secrets.GITHUB_TOKEN }}
+          keep_files: false
